@@ -1,0 +1,22 @@
+{
+  "name": "pokedex-mockup-server",
+  "version": "1.0.0",
+  "description": "GraphQL mock API for Pokedex trainer data",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "mock:api": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "json-graphql-server": "^3.3.0"
+  }
+}
