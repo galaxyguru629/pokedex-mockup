@@ -1,4 +1,5 @@
-import type { Prisma } from '@prisma/client';
+import type { Prisma, Team } from '@prisma/client';
+import { prisma } from '../../config/database';
 import { NotFoundError } from '../../shared/errors/app-error';
 import { teamRepository, type ListParams, type TeamFilter } from './team.repository';
 
@@ -29,9 +30,14 @@ export const teamService = {
     return teamRepository.update(id, data);
   },
 
-  async remove(id: number) {
+  async remove(id: number): Promise<Team> {
     const existing = await teamRepository.findById(id);
     if (!existing) throw new NotFoundError('Team', id);
-    return teamRepository.delete(id);
+
+    // Battles reference teams with onDelete: Restrict — remove them first.
+    return prisma.$transaction(async (tx) => {
+      await tx.battle.deleteMany({ where: { teamId: id } });
+      return tx.team.delete({ where: { id } });
+    });
   },
 };
