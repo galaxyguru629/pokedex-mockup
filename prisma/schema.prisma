@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BattleResult {
+  win
+  loss
+}
+
+enum LogSeverity {
+  success
+  info
+  danger
+  warning
+}
+
+model Trainer {
+  id         Int      @id @default(autoincrement())
+  name       String
+  badgeCount Int      @map("badge_count")
+  region     String
+  avatarUrl  String   @default("") @map("avatar_url")
+  rank       String
+  teams      Team[]
+  battles    Battle[]
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("trainers")
+}
+
+model Team {
+  id         Int      @id @default(autoincrement())
+  trainerId  Int      @map("trainer_id")
+  name       String
+  pokemonIds Int[]    @map("pokemon_ids")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  trainer    Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  battles    Battle[]
+
+  @@index([trainerId])
+  @@map("teams")
+}
+
+model Battle {
+  id            Int          @id @default(autoincrement())
+  trainerId     Int          @map("trainer_id")
+  opponentName  String       @map("opponent_name")
+  teamId        Int          @map("team_id")
+  result        BattleResult
+  date          DateTime     @db.Date
+  scoreTrainer  Int          @map("score_trainer")
+  scoreOpponent Int          @map("score_opponent")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  trainer       Trainer      @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  team          Team         @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  battleLogs    BattleLog[]
+
+  @@index([trainerId])
+  @@index([teamId])
+  @@map("battles")
+}
+
+model BattleLog {
+  id        Int        @id @default(autoincrement())
+  battleId  Int        @map("battle_id")
+  timestamp DateTime
+  message   String
+  severity  LogSeverity
+  createdAt DateTime   @default(now()) @map("created_at")
+  battle    Battle     @relation(fields: [battleId], references: [id], onDelete: Cascade)
+
+  @@index([battleId])
+  @@map("battle_logs")
+}
