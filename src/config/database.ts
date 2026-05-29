@@ -16,9 +16,8 @@ export const prisma =
         : ['error'],
   });
 
-if (env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+// Reuse the client across serverless invocations to limit DB connections.
+globalForPrisma.prisma = prisma;
 
 export async function connectDatabase(): Promise<void> {
   await prisma.$connect();

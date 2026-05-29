@@ -1,12 +1,37 @@
 import cors from 'cors';
-import express from 'express';
+import express, { type Express } from 'express';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { connectDatabase } from './config/database';
 import { env } from './config/env';
 import { registerGraphQL } from './graphql';
 import { logger } from './config/logger';
 import { errorHandler } from './shared/errors/error-handler';
 import { registerHealthRoute } from './routes/health';
+
+let cachedApp: Express | undefined;
+
+/** Lazily builds and caches the Express app (used by Vercel serverless). */
+async function getApp(): Promise<Express> {
+  if (!cachedApp) {
+    await connectDatabase();
+    cachedApp = await createApp();
+  }
+  return cachedApp;
+}
+
+/**
+ * Vercel serverless entry point.
+ * @see https://vercel.com/docs/functions/runtimes/node-js#using-express-with-vercel
+ */
+export default async function handler(
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> {
+  const app = await getApp();
+  app(req, res);
+}
 
 export async function createApp() {
   const app = express();
