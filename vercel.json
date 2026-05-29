@@ -1,18 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "version": 2,
   "installCommand": "npm install",
-  "buildCommand": "npm run build && npx prisma generate",
-  "builds": [
+  "buildCommand": "npx prisma generate",
+  "rewrites": [
     {
-      "src": "dist/app.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "dist/app.js"
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ]
 }
